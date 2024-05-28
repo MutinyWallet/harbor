@@ -8,7 +8,7 @@ use crate::{HarborWallet, Message};
 use super::{format_amount, hr, map_icon, vr, FederationItem, SvgIcon};
 
 pub fn h_screen_header(harbor: &HarborWallet, show_balance: bool) -> Element<Message> {
-    if let Some(item) = harbor.federation_list.first() {
+    if let Some(item) = harbor.active_federation.as_ref() {
         let FederationItem { name, id: _id } = item;
         let people_icon = map_icon(SvgIcon::People, 24., 24.);
         let current_federation = row![people_icon, text(name).size(24)]
@@ -17,6 +17,7 @@ pub fn h_screen_header(harbor: &HarborWallet, show_balance: bool) -> Element<Mes
             .width(Length::Shrink)
             .padding(16);
 
+        // todo balance of only active federation
         let formatted_balance = format_amount(harbor.balance_sats);
 
         let balance = row![text(formatted_balance).size(24)]

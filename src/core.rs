@@ -82,19 +82,27 @@ impl HarborCore {
             .await;
     }
 
-    // todo for now just use the first client, but eventually we'll want to have a way to select a client
-    async fn get_client(&self) -> FedimintClient {
-        self.clients.read().await.values().next().unwrap().clone()
+    async fn get_client(&self, federation_id: FederationId) -> FedimintClient {
+        let clients = self.clients.read().await;
+        clients
+            .get(&federation_id)
+            .expect("No client found for federation")
+            .clone()
     }
 
-    async fn send_lightning(&self, msg_id: Uuid, invoice: Bolt11Invoice) -> anyhow::Result<()> {
+    async fn send_lightning(
+        &self,
+        msg_id: Uuid,
+        federation_id: FederationId,
+        invoice: Bolt11Invoice,
+    ) -> anyhow::Result<()> {
         if invoice.amount_milli_satoshis().is_none() {
             return Err(anyhow!("Invoice must have an amount"));
         }
         let amount = Amount::from_msats(invoice.amount_milli_satoshis().expect("must have amount"));
 
         // todo go through all clients and select the first one that has enough balance
-        let client = self.get_client().await.fedimint_client;
+        let client = self.get_client(federation_id).await.fedimint_client;
         let lightning_module = client.get_first_module::<LightningClientModule>();
 
         let gateway = select_gateway(&client)
@@ -152,9 +160,10 @@ impl HarborCore {
     async fn receive_lightning(
         &self,
         msg_id: Uuid,
+        federation_id: FederationId,
         amount: Amount,
     ) -> anyhow::Result<Bolt11Invoice> {
-        let client = self.get_client().await.fedimint_client;
+        let client = self.get_client(federation_id).await.fedimint_client;
         let lightning_module = client.get_first_module::<LightningClientModule>();
 
         let gateway = select_gateway(&client)
@@ -205,11 +214,12 @@ impl HarborCore {
     async fn send_onchain(
         &self,
         msg_id: Uuid,
+        federation_id: FederationId,
         address: Address,
         sats: Option<u64>,
     ) -> anyhow::Result<()> {
         // todo go through all clients and select the first one that has enough balance
-        let client = self.get_client().await.fedimint_client;
+        let client = self.get_client(federation_id).await.fedimint_client;
         let onchain = client.get_first_module::<WalletClientModule>();
 
         // todo add manual fee selection
@@ -270,9 +280,12 @@ impl HarborCore {
         Ok(())
     }
 
-    async fn receive_onchain(&self, msg_id: Uuid) -> anyhow::Result<Address> {
-        // todo add federation id selection
-        let client = self.get_client().await.fedimint_client;
+    async fn receive_onchain(
+        &self,
+        msg_id: Uuid,
+        federation_id: FederationId,
+    ) -> anyhow::Result<Address> {
+        let client = self.get_client(federation_id).await.fedimint_client;
         let onchain = client.get_first_module::<WalletClientModule>();
 
         // expire the address in 1 year
@@ -485,18 +498,24 @@ async fn process_core(core_handle: &mut bridge::CoreHandle, core: &HarborCore) {
         tokio::spawn(async move {
             if let Some(msg) = msg {
                 match msg.msg {
-                    UICoreMsg::SendLightning(invoice) => {
+                    UICoreMsg::SendLightning {
+                        federation_id,
+                        invoice,
+                    } => {
                         log::info!("Got UICoreMsg::Send");
                         core.msg(Some(msg.id), CoreUIMsg::Sending).await;
-                        if let Err(e) = core.send_lightning(msg.id, invoice).await {
+                        if let Err(e) = core.send_lightning(msg.id, federation_id, invoice).await {
                             error!("Error sending: {e}");
                             core.msg(Some(msg.id), CoreUIMsg::SendFailure(e.to_string()))
                                 .await;
                         }
                     }
-                    UICoreMsg::ReceiveLightning(amount) => {
+                    UICoreMsg::ReceiveLightning {
+                        federation_id,
+                        amount,
+                    } => {
                         core.msg(Some(msg.id), CoreUIMsg::ReceiveGenerating).await;
-                        match core.receive_lightning(msg.id, amount).await {
+                        match core.receive_lightning(msg.id, federation_id, amount).await {
                             Err(e) => {
                                 core.msg(Some(msg.id), CoreUIMsg::ReceiveFailed(e.to_string()))
                                     .await;
@@ -508,20 +527,24 @@ async fn process_core(core_handle: &mut bridge::CoreHandle, core: &HarborCore) {
                         }
                     }
                     UICoreMsg::SendOnChain {
+                        federation_id,
                         address,
                         amount_sats,
                     } => {
                         log::info!("Got UICoreMsg::SendOnChain");
                         core.msg(Some(msg.id), CoreUIMsg::Sending).await;
-                        if let Err(e) = core.send_onchain(msg.id, address, amount_sats).await {
+                        if let Err(e) = core
+                            .send_onchain(msg.id, federation_id, address, amount_sats)
+                            .await
+                        {
                             error!("Error sending: {e}");
                             core.msg(Some(msg.id), CoreUIMsg::SendFailure(e.to_string()))
                                 .await;
                         }
                     }
-                    UICoreMsg::ReceiveOnChain => {
+                    UICoreMsg::ReceiveOnChain { federation_id } => {
                         core.msg(Some(msg.id), CoreUIMsg::ReceiveGenerating).await;
-                        match core.receive_onchain(msg.id).await {
+                        match core.receive_onchain(msg.id, federation_id).await {
                             Err(e) => {
                                 core.msg(Some(msg.id), CoreUIMsg::ReceiveFailed(e.to_string()))
                                     .await;
