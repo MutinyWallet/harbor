@@ -3,9 +3,11 @@ use components::{FederationItem, Toast, ToastManager, ToastStatus, TransactionIt
 use core::run_core;
 use fedimint_core::api::InviteCode;
 use fedimint_core::config::FederationId;
+use fedimint_core::Amount;
 use fedimint_ln_common::lightning_invoice::Bolt11Invoice;
 use iced::widget::qr_code::Data;
 use routes::Route;
+use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -125,7 +127,7 @@ pub struct HarborWallet {
     active_route: Route,
     toasts: Vec<Toast>,
     // Globals
-    balance_sats: u64,
+    federation_balances: HashMap<FederationId, Amount>,
     transaction_history: Vec<TransactionItem>,
     federation_list: Vec<FederationItem>,
     active_federation: Option<FederationItem>,
@@ -164,6 +166,14 @@ pub struct HarborWallet {
 }
 
 impl HarborWallet {
+    fn balance_sats(&self) -> u64 {
+        let mut amount = Amount::ZERO;
+        for balance in self.federation_balances.values() {
+            amount += *balance;
+        }
+        amount.sats_round_down()
+    }
+
     fn subscription(&self) -> Subscription<Message> {
         run_core()
     }
@@ -175,9 +185,7 @@ impl HarborWallet {
         invoice: Bolt11Invoice,
     ) {
         if let Some(ui_handle) = ui_handle {
-            ui_handle
-                .send_lightning(id, federation_id, invoice)
-                .await;
+            ui_handle.send_lightning(id, federation_id, invoice).await;
         } else {
             panic!("UI handle is None");
         }
@@ -579,12 +587,12 @@ impl HarborWallet {
                     }
                     Command::none()
                 }
-                CoreUIMsg::BalanceUpdated(balance) => {
-                    self.balance_sats = balance.sats_round_down();
-                    Command::none()
-                }
                 CoreUIMsg::TransactionHistoryUpdated(history) => {
                     self.transaction_history = history;
+                    Command::none()
+                }
+                CoreUIMsg::FederationBalanceUpdated { id, balance } => {
+                    self.federation_balances.insert(id, balance);
                     Command::none()
                 }
                 CoreUIMsg::ReceiveGenerating => {

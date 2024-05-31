@@ -65,9 +65,9 @@ pub enum CoreUIMsg {
     ReceiveAddressGenerated(Address),
     ReceiveSuccess(ReceiveSuccessMsg),
     ReceiveFailed(String),
-    BalanceUpdated(Amount),
     // todo probably want a way to incrementally add items to the history
     TransactionHistoryUpdated(Vec<TransactionItem>),
+    FederationBalanceUpdated { id: FederationId, balance: Amount },
     AddFederationFailed(String),
     FederationInfo(ClientConfig),
     AddFederationSuccess,

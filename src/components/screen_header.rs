@@ -1,3 +1,4 @@
+use fedimint_core::Amount;
 use iced::{
     widget::{column, row, text},
     Alignment, Element, Length,
@@ -18,7 +19,11 @@ pub fn h_screen_header(harbor: &HarborWallet, show_balance: bool) -> Element<Mes
             .padding(16);
 
         // todo balance of only active federation
-        let formatted_balance = format_amount(harbor.balance_sats);
+        let balance = harbor
+            .federation_balances
+            .get(&item.id)
+            .unwrap_or(&Amount::ZERO);
+        let formatted_balance = format_amount(balance.sats_round_down());
 
         let balance = row![text(formatted_balance).size(24)]
             .align_items(Alignment::Center)

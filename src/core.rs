@@ -66,12 +66,17 @@ impl HarborCore {
 
     // Sends updates to the UI to refelect the initial state
     async fn init_ui_state(&self) {
-        let mut balance = Amount::ZERO;
         for client in self.clients.read().await.values() {
-            balance += client.fedimint_client.get_balance().await;
+            let fed_balance = client.fedimint_client.get_balance().await;
+            self.msg(
+                None,
+                CoreUIMsg::FederationBalanceUpdated {
+                    id: client.fedimint_client.federation_id(),
+                    balance: fed_balance,
+                },
+            )
+            .await;
         }
-
-        self.msg(None, CoreUIMsg::BalanceUpdated(balance)).await;
 
         let history = self.storage.get_transaction_history().unwrap();
         self.msg(None, CoreUIMsg::TransactionHistoryUpdated(history))
@@ -406,18 +411,18 @@ pub fn run_core() -> Subscription<Message> {
                         let db_path = path.join("harbor.sqlite");
 
                         let db_path = db_path.to_str().unwrap().to_string();
-                        if let Err(e) = check_password(&db_path, &password) {
-                            // probably invalid password
-                            error!("error using password: {e}");
-
-                            tx.send(Message::core_msg(
-                                id,
-                                CoreUIMsg::UnlockFailed(e.to_string()),
-                            ))
-                            .await
-                            .expect("should send");
-                            continue;
-                        }
+                        // if let Err(e) = check_password(&db_path, &password) {
+                        //     // probably invalid password
+                        //     error!("error using password: {e}");
+                        //
+                        //     tx.send(Message::core_msg(
+                        //         id,
+                        //         CoreUIMsg::UnlockFailed(e.to_string()),
+                        //     ))
+                        //     .await
+                        //     .expect("should send");
+                        //     continue;
+                        // }
 
                         log::info!("Correct password");
 

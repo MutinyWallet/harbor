@@ -1,3 +1,4 @@
+use fedimint_core::Amount;
 use iced::widget::{column, text};
 use iced::{Color, Element};
 
@@ -34,12 +35,15 @@ pub fn mints(harbor: &HarborWallet) -> Element<Message> {
             .map(|r| text(r).size(18).color(Color::from_rgb8(255, 0, 0))),
     );
 
-    let column = column.push_maybe(
-        harbor
-            .peek_federation_item
-            .as_ref()
-            .map(|item| h_federation_item(item)),
-    );
+    let column = column.push_maybe(harbor.peek_federation_item.as_ref().map(|item| {
+        h_federation_item(
+            item,
+            *harbor
+                .federation_balances
+                .get(&item.id)
+                .unwrap_or(&Amount::ZERO),
+        )
+    }));
 
     let column = if harbor.federation_list.is_empty() {
         column.push(text("No federations added yet.").size(18))
@@ -48,7 +52,13 @@ pub fn mints(harbor: &HarborWallet) -> Element<Message> {
             .federation_list
             .iter()
             .fold(column![], |column, item| {
-                column.push(h_federation_item(item))
+                column.push(h_federation_item(
+                    item,
+                    *harbor
+                        .federation_balances
+                        .get(&item.id)
+                        .unwrap_or(&Amount::ZERO),
+                ))
             });
 
         column.push(federation_list)
