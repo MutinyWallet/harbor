@@ -2,9 +2,12 @@ use bitcoin::Address;
 use components::{FederationItem, Toast, ToastManager, ToastStatus, TransactionItem};
 use core::run_core;
 use fedimint_core::api::InviteCode;
+use fedimint_core::config::FederationId;
+use fedimint_core::Amount;
 use fedimint_ln_common::lightning_invoice::Bolt11Invoice;
 use iced::widget::qr_code::Data;
 use routes::Route;
+use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -124,9 +127,10 @@ pub struct HarborWallet {
     active_route: Route,
     toasts: Vec<Toast>,
     // Globals
-    balance_sats: u64,
+    federation_balances: HashMap<FederationId, Amount>,
     transaction_history: Vec<TransactionItem>,
     federation_list: Vec<FederationItem>,
+    active_federation: Option<FederationItem>,
     // Lock screen
     password_input_str: String,
     unlock_status: UnlockStatus,
@@ -162,6 +166,14 @@ pub struct HarborWallet {
 }
 
 impl HarborWallet {
+    fn balance_sats(&self) -> u64 {
+        let mut amount = Amount::ZERO;
+        for balance in self.federation_balances.values() {
+            amount += *balance;
+        }
+        amount.sats_round_down()
+    }
+
     fn subscription(&self) -> Subscription<Message> {
         run_core()
     }
@@ -169,10 +181,11 @@ impl HarborWallet {
     async fn async_send_lightning(
         ui_handle: Option<Arc<bridge::UIHandle>>,
         id: Uuid,
+        federation_id: FederationId,
         invoice: Bolt11Invoice,
     ) {
         if let Some(ui_handle) = ui_handle {
-            ui_handle.send_lightning(id, invoice).await;
+            ui_handle.send_lightning(id, federation_id, invoice).await;
         } else {
             panic!("UI handle is None");
         }
@@ -181,28 +194,40 @@ impl HarborWallet {
     async fn async_send_onchain(
         ui_handle: Option<Arc<bridge::UIHandle>>,
         id: Uuid,
+        federation_id: FederationId,
         address: Address,
         amount_sats: Option<u64>,
     ) {
         println!("Got to async_send");
         if let Some(ui_handle) = ui_handle {
-            ui_handle.send_onchain(id, address, amount_sats).await;
+            ui_handle
+                .send_onchain(id, federation_id, address, amount_sats)
+                .await;
         } else {
             panic!("UI handle is None");
         }
     }
 
-    async fn async_receive(ui_handle: Option<Arc<bridge::UIHandle>>, id: Uuid, amount: u64) {
+    async fn async_receive(
+        ui_handle: Option<Arc<bridge::UIHandle>>,
+        id: Uuid,
+        federation_id: FederationId,
+        amount: u64,
+    ) {
         if let Some(ui_handle) = ui_handle {
-            ui_handle.receive(id, amount).await;
+            ui_handle.receive(id, federation_id, amount).await;
         } else {
             panic!("UI handle is None");
         }
     }
 
-    async fn async_receive_onchain(ui_handle: Option<Arc<bridge::UIHandle>>, id: Uuid) {
+    async fn async_receive_onchain(
+        ui_handle: Option<Arc<bridge::UIHandle>>,
+        id: Uuid,
+        federation_id: FederationId,
+    ) {
         if let Some(ui_handle) = ui_handle {
-            ui_handle.receive_onchain(id).await;
+            ui_handle.receive_onchain(id, federation_id).await;
         } else {
             panic!("UI handle is None");
         }
@@ -337,11 +362,25 @@ impl HarborWallet {
                 SendStatus::Sending => Command::none(),
                 _ => {
                     self.send_failure_reason = None;
+                    let federation_id = match self.active_federation.as_ref() {
+                        Some(f) => f.id,
+                        None => {
+                            // todo show error
+                            error!("No active federation");
+                            return Command::none();
+                        }
+                    };
+
                     let id = Uuid::new_v4();
                     self.current_send_id = Some(id);
                     if let Ok(invoice) = Bolt11Invoice::from_str(&invoice_str) {
                         Command::perform(
-                            Self::async_send_lightning(self.ui_handle.clone(), id, invoice),
+                            Self::async_send_lightning(
+                                self.ui_handle.clone(),
+                                id,
+                                federation_id,
+                                invoice,
+                            ),
                             |_| Message::Noop,
                         )
                     } else if let Ok(address) = Address::from_str(&invoice_str) {
@@ -352,7 +391,13 @@ impl HarborWallet {
                             Some(self.send_amount_input_str.parse::<u64>().unwrap())
                         };
                         Command::perform(
-                            Self::async_send_onchain(self.ui_handle.clone(), id, address, amount),
+                            Self::async_send_onchain(
+                                self.ui_handle.clone(),
+                                id,
+                                federation_id,
+                                address,
+                                amount,
+                            ),
                             |_| Message::Noop,
                         )
                     } else {
@@ -365,12 +410,20 @@ impl HarborWallet {
             Message::GenerateInvoice => match self.receive_status {
                 ReceiveStatus::Generating => Command::none(),
                 _ => {
+                    let federation_id = match self.active_federation.as_ref() {
+                        Some(f) => f.id,
+                        None => {
+                            // todo show error
+                            error!("No active federation");
+                            return Command::none();
+                        }
+                    };
                     let id = Uuid::new_v4();
                     self.current_receive_id = Some(id);
                     self.receive_failure_reason = None;
                     match self.receive_amount_str.parse::<u64>() {
                         Ok(amount) => Command::perform(
-                            Self::async_receive(self.ui_handle.clone(), id, amount),
+                            Self::async_receive(self.ui_handle.clone(), id, federation_id, amount),
                             |_| Message::Noop,
                         ),
                         Err(e) => {
@@ -384,17 +437,34 @@ impl HarborWallet {
             Message::GenerateAddress => match self.receive_status {
                 ReceiveStatus::Generating => Command::none(),
                 _ => {
+                    let federation_id = match self.active_federation.as_ref() {
+                        Some(f) => f.id,
+                        None => {
+                            // todo show error
+                            error!("No active federation");
+                            return Command::none();
+                        }
+                    };
                     let id = Uuid::new_v4();
                     self.current_receive_id = Some(id);
                     self.receive_failure_reason = None;
                     Command::perform(
-                        Self::async_receive_onchain(self.ui_handle.clone(), id),
+                        Self::async_receive_onchain(self.ui_handle.clone(), id, federation_id),
                         |_| Message::Noop,
                     )
                 }
             },
             Message::Donate => match self.donate_amount_str.parse::<u64>() {
                 Ok(amount) => {
+                    let federation_id = match self.active_federation.as_ref() {
+                        Some(f) => f.id,
+                        None => {
+                            // todo show error
+                            error!("No active federation");
+                            return Command::none();
+                        }
+                    };
+
                     // TODO: don't hardcode this!
                     let hardcoded_donation_address = "tb1qd28npep0s8frcm3y7dxqajkcy2m40eysplyr9v";
                     let address = Address::from_str(hardcoded_donation_address).unwrap();
@@ -402,7 +472,13 @@ impl HarborWallet {
                     self.current_send_id = Some(id);
 
                     Command::perform(
-                        Self::async_send_onchain(self.ui_handle.clone(), id, address, Some(amount)),
+                        Self::async_send_onchain(
+                            self.ui_handle.clone(),
+                            id,
+                            federation_id,
+                            address,
+                            Some(amount),
+                        ),
                         |_| Message::Noop,
                     )
                 }
@@ -511,12 +587,12 @@ impl HarborWallet {
                     }
                     Command::none()
                 }
-                CoreUIMsg::BalanceUpdated(balance) => {
-                    self.balance_sats = balance.sats_round_down();
-                    Command::none()
-                }
                 CoreUIMsg::TransactionHistoryUpdated(history) => {
                     self.transaction_history = history;
+                    Command::none()
+                }
+                CoreUIMsg::FederationBalanceUpdated { id, balance } => {
+                    self.federation_balances.insert(id, balance);
                     Command::none()
                 }
                 CoreUIMsg::ReceiveGenerating => {
@@ -561,6 +637,11 @@ impl HarborWallet {
                     Command::none()
                 }
                 CoreUIMsg::FederationListUpdated(list) => {
+                    // if we don't have an active federation, set it to the first one
+                    if self.active_federation.is_none() {
+                        self.active_federation = list.first().cloned();
+                    }
+
                     self.federation_list = list;
                     Command::none()
                 }

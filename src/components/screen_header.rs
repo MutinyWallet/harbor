@@ -1,3 +1,4 @@
+use fedimint_core::Amount;
 use iced::{
     widget::{column, row, text},
     Alignment, Element, Length,
@@ -8,7 +9,7 @@ use crate::{HarborWallet, Message};
 use super::{format_amount, hr, map_icon, vr, FederationItem, SvgIcon};
 
 pub fn h_screen_header(harbor: &HarborWallet, show_balance: bool) -> Element<Message> {
-    if let Some(item) = harbor.federation_list.first() {
+    if let Some(item) = harbor.active_federation.as_ref() {
         let FederationItem { name, id: _id } = item;
         let people_icon = map_icon(SvgIcon::People, 24., 24.);
         let current_federation = row![people_icon, text(name).size(24)]
@@ -17,7 +18,12 @@ pub fn h_screen_header(harbor: &HarborWallet, show_balance: bool) -> Element<Mes
             .width(Length::Shrink)
             .padding(16);
 
-        let formatted_balance = format_amount(harbor.balance_sats);
+        // todo balance of only active federation
+        let balance = harbor
+            .federation_balances
+            .get(&item.id)
+            .unwrap_or(&Amount::ZERO);
+        let formatted_balance = format_amount(balance.sats_round_down());
 
         let balance = row![text(formatted_balance).size(24)]
             .align_items(Alignment::Center)
