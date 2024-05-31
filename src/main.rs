@@ -1,15 +1,16 @@
 use bitcoin::Address;
 use components::{FederationItem, Toast, ToastManager, ToastStatus, TransactionItem};
 use core::run_core;
-use fedimint_core::api::InviteCode;
 use fedimint_core::config::FederationId;
 use fedimint_core::Amount;
+use fedimint_core::invite_code::InviteCode;
 use fedimint_ln_common::lightning_invoice::Bolt11Invoice;
 use iced::widget::qr_code::Data;
 use routes::Route;
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
+use bitcoin::address::NetworkUnchecked;
 
 use bridge::{CoreUIMsg, CoreUIMsgPacket, ReceiveSuccessMsg, SendSuccessMsg};
 use iced::subscription::Subscription;
@@ -195,7 +196,7 @@ impl HarborWallet {
         ui_handle: Option<Arc<bridge::UIHandle>>,
         id: Uuid,
         federation_id: FederationId,
-        address: Address,
+        address: Address<NetworkUnchecked>,
         amount_sats: Option<u64>,
     ) {
         println!("Got to async_send");

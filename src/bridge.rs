@@ -1,7 +1,8 @@
 use crate::components::{FederationItem, TransactionItem};
+use bitcoin::address::NetworkUnchecked;
 use bitcoin::{Address, Txid};
-use fedimint_core::api::InviteCode;
 use fedimint_core::config::{ClientConfig, FederationId};
+use fedimint_core::invite_code::InviteCode;
 use fedimint_core::Amount;
 use fedimint_ln_common::lightning_invoice::Bolt11Invoice;
 use tokio::sync::mpsc;
@@ -25,7 +26,7 @@ pub enum UICoreMsg {
     },
     SendOnChain {
         federation_id: FederationId,
-        address: Address,
+        address: Address<NetworkUnchecked>,
         amount_sats: Option<u64>,
     },
     ReceiveOnChain {
@@ -114,7 +115,7 @@ impl UIHandle {
         &self,
         id: Uuid,
         federation_id: FederationId,
-        address: Address,
+        address: Address<NetworkUnchecked>,
         amount_sats: Option<u64>,
     ) {
         self.msg_send(UICoreMsgPacket {

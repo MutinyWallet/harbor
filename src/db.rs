@@ -16,6 +16,7 @@ use fedimint_core::Amount;
 use fedimint_ln_common::lightning_invoice::Bolt11Invoice;
 use rusqlite::{Connection, OpenFlags};
 use std::{sync::Arc, time::Duration};
+use bitcoin::address::NetworkUnchecked;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
@@ -114,7 +115,7 @@ pub trait DBConnection {
         &self,
         operation_id: OperationId,
         fedimint_id: FederationId,
-        address: Address,
+        address: Address<NetworkUnchecked>,
         amount_sats: u64,
         fee_sats: u64,
     ) -> anyhow::Result<()>;
@@ -277,7 +278,7 @@ impl DBConnection for SQLConnection {
         &self,
         operation_id: OperationId,
         fedimint_id: FederationId,
-        address: Address,
+        address: Address<NetworkUnchecked>,
         amount_sats: u64,
         fee_sats: u64,
     ) -> anyhow::Result<()> {

@@ -18,6 +18,7 @@ pub fn data_dir(network: Network) -> PathBuf {
         Network::Testnet => default.join("testnet3"),
         Network::Regtest => default.join("regtest"),
         Network::Signet => default.join("signet"),
+        _ => panic!("Invalid network"),
     }
 }
 

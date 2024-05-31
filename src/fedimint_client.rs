@@ -10,7 +10,7 @@ use fedimint_bip39::Bip39RootSecretStrategy;
 use fedimint_client::oplog::UpdateStreamOrOutcome;
 use fedimint_client::secret::{get_default_client_secret, RootSecretStrategy};
 use fedimint_client::ClientHandleArc;
-use fedimint_core::config::{ClientConfig, FederationId};
+use fedimint_core::config::FederationId;
 use fedimint_core::core::OperationId;
 use fedimint_core::db::mem_impl::MemDatabase;
 use fedimint_core::db::mem_impl::MemTransaction;
@@ -18,7 +18,7 @@ use fedimint_core::db::IDatabaseTransactionOps;
 use fedimint_core::db::IRawDatabase;
 use fedimint_core::db::IRawDatabaseTransaction;
 use fedimint_core::db::PrefixStream;
-use fedimint_core::{api::InviteCode, db::IDatabaseTransactionOpsCore};
+use fedimint_core::{db::IDatabaseTransactionOpsCore, invite_code::InviteCode};
 use fedimint_ln_client::{
     InternalPayState, LightningClientInit, LightningClientModule, LnPayState, LnReceiveState,
 };
@@ -28,6 +28,7 @@ use fedimint_wallet_client::{DepositState, WalletClientInit, WalletClientModule,
 use iced::futures::channel::mpsc::Sender;
 use iced::futures::{SinkExt, StreamExt};
 use log::{debug, error, info, trace};
+use std::fmt::Debug;
 use std::sync::Arc;
 use std::time::Instant;
 use std::{
@@ -80,7 +81,7 @@ impl FedimintClient {
         let mut client_builder = fedimint_client::Client::builder(db.into());
         client_builder.with_module(WalletClientInit(None));
         client_builder.with_module(MintClientInit);
-        client_builder.with_module(LightningClientInit);
+        client_builder.with_module(LightningClientInit::default());
 
         client_builder.with_primary_module(1);
 
@@ -99,7 +100,7 @@ impl FedimintClient {
             )
         } else if let FederationInviteOrId::Invite(i) = invite_or_id {
             let download = Instant::now();
-            let config = ClientConfig::download_from_invite_code(&i)
+            let config = fedimint_api_client::download_from_invite_code(&i)
                 .await
                 .map_err(|e| {
                     error!("Could not download federation info: {e}");
@@ -112,7 +113,11 @@ impl FedimintClient {
 
             Some(
                 client_builder
-                    .join(get_default_client_secret(&secret, &federation_id), config)
+                    .join(
+                        get_default_client_secret(&secret, &federation_id),
+                        config,
+                        None,
+                    )
                     .await
                     .map_err(|e| {
                         error!("Could not join federation: {e}");
@@ -679,6 +684,15 @@ pub struct SQLPseudoTransaction<'a> {
     pub(crate) storage: Arc<dyn DBConnection + Send + Sync>,
     federation_id: String,
     mem: MemTransaction<'a>,
+}
+
+impl Debug for SQLPseudoTransaction<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SQLPseudoTransaction")
+            .field("federation_id", &self.federation_id)
+            .field("mem", &self.mem)
+            .finish()
+    }
 }
 
 #[async_trait]
