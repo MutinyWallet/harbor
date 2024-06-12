@@ -20,9 +20,9 @@ checksum = "c71b1793ee61086797f5c80b6efa2b8ffa6d5dd703f118545808a7f2e27f7046"
 
 [[package]]
 name = "addr2line"
-version = "0.21.0"
+version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a30b2e23b9e17a9f90641c7ab1549cd9b44f296d3ccbf309d2863cfe398a0cb"
+checksum = "6e4503c46a5c0c7844e948c9a4d6acd9f50cccb4de1c48eb9e291ea17470c678"
 dependencies = [
  "gimli",
 ]
@@ -386,9 +386,9 @@ dependencies = [
 
 [[package]]
 name = "backtrace"
-version = "0.3.71"
+version = "0.3.73"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26b05800d2e817c8b3b4b54abd461726265fa9789ae34330622f2db9ee696f9d"
+checksum = "5cc23269a4f8976d0a4d2e7109211a419fe30e8d88d677cd60b6bc79c5732e0a"
 dependencies = [
  "addr2line",
  "cc",
@@ -1563,7 +1563,7 @@ dependencies = [
 [[package]]
 name = "fedimint-aead"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "anyhow",
  "argon2",
@@ -1575,7 +1575,7 @@ dependencies = [
 [[package]]
 name = "fedimint-api-client"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "anyhow",
  "async-lock",
@@ -1605,7 +1605,7 @@ dependencies = [
 [[package]]
 name = "fedimint-bip39"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "bip39",
  "fedimint-client",
@@ -1616,7 +1616,7 @@ dependencies = [
 [[package]]
 name = "fedimint-bitcoind"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1637,7 +1637,7 @@ dependencies = [
 [[package]]
 name = "fedimint-build"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "serde_json",
 ]
@@ -1645,7 +1645,7 @@ dependencies = [
 [[package]]
 name = "fedimint-client"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "anyhow",
  "aquamarine",
@@ -1677,7 +1677,7 @@ dependencies = [
 [[package]]
 name = "fedimint-core"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "anyhow",
  "async-lock",
@@ -1730,7 +1730,7 @@ dependencies = [
 [[package]]
 name = "fedimint-derive"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "itertools 0.12.1",
  "proc-macro2",
@@ -1741,7 +1741,7 @@ dependencies = [
 [[package]]
 name = "fedimint-derive-secret"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "anyhow",
  "bitcoin_hashes 0.11.0",
@@ -1755,7 +1755,7 @@ dependencies = [
 [[package]]
 name = "fedimint-hkdf"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "bitcoin_hashes 0.12.0",
 ]
@@ -1763,7 +1763,7 @@ dependencies = [
 [[package]]
 name = "fedimint-ln-client"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "anyhow",
  "aquamarine",
@@ -1795,7 +1795,7 @@ dependencies = [
 [[package]]
 name = "fedimint-ln-common"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "anyhow",
  "bitcoin 0.30.2",
@@ -1816,7 +1816,7 @@ dependencies = [
 [[package]]
 name = "fedimint-logging"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "anyhow",
  "tracing-subscriber",
@@ -1825,7 +1825,7 @@ dependencies = [
 [[package]]
 name = "fedimint-mint-client"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "anyhow",
  "aquamarine",
@@ -1861,7 +1861,7 @@ dependencies = [
 [[package]]
 name = "fedimint-mint-common"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "anyhow",
  "bincode",
@@ -1877,7 +1877,7 @@ dependencies = [
 [[package]]
 name = "fedimint-tbs"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "bls12_381",
  "fedimint-core",
@@ -1914,7 +1914,7 @@ dependencies = [
 [[package]]
 name = "fedimint-wallet-client"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "anyhow",
  "aquamarine",
@@ -1941,7 +1941,7 @@ dependencies = [
 [[package]]
 name = "fedimint-wallet-common"
 version = "0.4.0-alpha"
-source = "git+https://github.com/benthecarman/fedimint?rev=a23502f9f70da5a06a089760112198e5b42981a7#a23502f9f70da5a06a089760112198e5b42981a7"
+source = "git+https://github.com/benthecarman/fedimint?branch=split-test#7c7313b314eb73e5a5396392a8a2dd3197415e90"
 dependencies = [
  "anyhow",
  "bitcoin 0.30.2",
@@ -2232,9 +2232,9 @@ dependencies = [
 
 [[package]]
 name = "gimli"
-version = "0.28.1"
+version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4271d37baee1b8c7e4b708028c57d816cf9d2434acb33a549475f78c181f6253"
+checksum = "40ecd4077b5ae9fd2e9e169b102c6c330d0605168eb0e8bf79952b256dbefffd"
 
 [[package]]
 name = "gl_generator"
@@ -3890,9 +3890,9 @@ dependencies = [
 
 [[package]]
 name = "object"
-version = "0.32.2"
+version = "0.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6a622008b6e321afc04970976f62ee297fdbaa6f95318ca343e3eebb9648441"
+checksum = "576dfe1fc8f9df304abb159d767a29d0476f7750fbf8aa7ad07816004a207434"
 dependencies = [
  "memchr",
 ]
@@ -5680,9 +5680,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.37.0"
+version = "1.38.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1adbebffeca75fcfd058afa480fb6c0b81e165a0323f9c9d39c9697e37c46787"
+checksum = "ba4f4a02a7a80d6f274636f0aa95c7e383b912d41fe721a31f29e29698585a4a"
 dependencies = [
  "backtrace",
  "bytes",
@@ -5700,9 +5700,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-macros"
-version = "2.2.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b8a1e28f2deaa14e508979454cb3a223b10b938b45af148bc0986de36f1923b"
+checksum = "5f5ae998a069d4b5aba8ee9dad856af7d520c3699e6159b185c2acd48155d39a"
 dependencies = [
  "proc-macro2",
  "quote",

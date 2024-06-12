@@ -14,7 +14,7 @@ pretty_env_logger = "0.5" # todo swap to a file logger
 iced = { git = "https://github.com/iced-rs/iced", rev = "b30d34f", features = ["debug", "tokio", "svg", "qr_code", "advanced"] }
 lyon_algorithms = "1.0"
 once_cell = "1.0"
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1.38", features = ["full"] }
 palette = "0.7"
 config = "0.14.0"
 serde = { version = "1.0", features = ["derive"] }
@@ -30,14 +30,14 @@ hex = "0.4.3"
 
 bitcoin = { version = "0.30.2", features = ["base64"] }
 bip39 = "2.0.0"
-fedimint-api-client = { git = "https://github.com/benthecarman/fedimint", rev = "a23502f9f70da5a06a089760112198e5b42981a7" }
-fedimint-client = { git = "https://github.com/benthecarman/fedimint", rev = "a23502f9f70da5a06a089760112198e5b42981a7" }
-fedimint-core = { git = "https://github.com/benthecarman/fedimint", rev = "a23502f9f70da5a06a089760112198e5b42981a7" }
-fedimint-wallet-client = { git = "https://github.com/benthecarman/fedimint", rev = "a23502f9f70da5a06a089760112198e5b42981a7" }
-fedimint-mint-client = { git = "https://github.com/benthecarman/fedimint", rev = "a23502f9f70da5a06a089760112198e5b42981a7" }
-fedimint-ln-client = { git = "https://github.com/benthecarman/fedimint", rev = "a23502f9f70da5a06a089760112198e5b42981a7" }
-fedimint-bip39 = { git = "https://github.com/benthecarman/fedimint", rev = "a23502f9f70da5a06a089760112198e5b42981a7" }
-fedimint-ln-common = { git = "https://github.com/benthecarman/fedimint", rev = "a23502f9f70da5a06a089760112198e5b42981a7" }
+fedimint-api-client = { git = "https://github.com/benthecarman/fedimint", branch = "split-test" }
+fedimint-client = { git = "https://github.com/benthecarman/fedimint", branch = "split-test" }
+fedimint-core = { git = "https://github.com/benthecarman/fedimint", branch = "split-test" }
+fedimint-wallet-client = { git = "https://github.com/benthecarman/fedimint", branch = "split-test" }
+fedimint-mint-client = { git = "https://github.com/benthecarman/fedimint", branch = "split-test" }
+fedimint-ln-client = { git = "https://github.com/benthecarman/fedimint", branch = "split-test" }
+fedimint-bip39 = { git = "https://github.com/benthecarman/fedimint", branch = "split-test" }
+fedimint-ln-common = { git = "https://github.com/benthecarman/fedimint", branch = "split-test" }
 
 [dev-dependencies]
 tempdir = "0.3.7"

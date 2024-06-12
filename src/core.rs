@@ -120,7 +120,12 @@ impl HarborCore {
         log::info!("Sending lightning invoice: {invoice}, paying fees: {fees}");
 
         let outgoing = lightning_module
-            .pay_bolt11_invoice(Some(gateway), invoice.clone(), None, ())
+            .pay_bolt11_invoice(
+                Some(gateway),
+                invoice.clone(),
+                Some(Amount::from_msats(amount.msats / 2)), // fixme i am hacking this
+                (),
+            )
             .await?;
 
         self.storage.create_lightning_payment(

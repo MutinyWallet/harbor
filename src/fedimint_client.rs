@@ -198,6 +198,18 @@ pub(crate) async fn select_gateway(client: &ClientHandleArc) -> Option<Lightning
     let gateways = ln.list_gateways().await;
     let mut selected_gateway: Option<LightningGateway> = None;
     for gateway in gateways.iter() {
+        // hardcoded gateway that has split payments for testing
+        let id = gateway.info.gateway_id.to_string();
+        if id == "03beac683736066cb19767bd5425bdb42637b70cb1572c69f33139bca122eec43b"
+            || id == "0285753ba75b693adb986301b603a6b2e297dadf21adb6c967b8cb92694b1506e6"
+        {
+            let g = ln
+                .select_gateway(&gateway.info.gateway_id)
+                .await
+                .expect("Could not select gateway");
+            return Some(g);
+        }
+
         // first try to find a vetted gateway
         if gateway.vetted {
             // if we can select the gateway, return it
@@ -328,6 +340,21 @@ pub(crate) async fn spawn_invoice_payment_subscription(
                         .send(Message::core_msg(
                             Some(msg_id),
                             CoreUIMsg::SendFailure("Canceled".to_string()),
+                        ))
+                        .await
+                        .unwrap();
+
+                    if let Err(e) = storage.mark_lightning_payment_as_failed(operation_id) {
+                        error!("Could not mark lightning payment as failed: {e}");
+                    }
+                    break;
+                }
+                LnPayState::Refunded { gateway_error } => {
+                    error!("Payment refunded: {gateway_error:?}");
+                    sender
+                        .send(Message::core_msg(
+                            Some(msg_id),
+                            CoreUIMsg::SendFailure(gateway_error.to_string()),
                         ))
                         .await
                         .unwrap();

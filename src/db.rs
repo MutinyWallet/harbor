@@ -236,7 +236,7 @@ impl DBConnection for SQLConnection {
     ) -> anyhow::Result<()> {
         let conn = &mut self.db.get()?;
 
-        LightningPayment::create(conn, operation_id, fedimint_id, bolt11, amount, fee)?;
+        // LightningPayment::create(conn, operation_id, fedimint_id, bolt11, amount, fee)?;
 
         Ok(())
     }
@@ -248,7 +248,7 @@ impl DBConnection for SQLConnection {
     ) -> anyhow::Result<()> {
         let conn = &mut self.db.get()?;
 
-        LightningPayment::set_preimage(conn, operation_id, preimage)?;
+        // LightningPayment::set_preimage(conn, operation_id, preimage)?;
 
         Ok(())
     }
@@ -256,7 +256,7 @@ impl DBConnection for SQLConnection {
     fn mark_lightning_payment_as_failed(&self, operation_id: OperationId) -> anyhow::Result<()> {
         let conn = &mut self.db.get()?;
 
-        LightningPayment::mark_as_failed(conn, operation_id)?;
+        // LightningPayment::mark_as_failed(conn, operation_id)?;
 
         Ok(())
     }

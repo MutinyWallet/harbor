@@ -1,16 +1,16 @@
+use bitcoin::address::NetworkUnchecked;
 use bitcoin::Address;
 use components::{FederationItem, Toast, ToastManager, ToastStatus, TransactionItem};
 use core::run_core;
 use fedimint_core::config::FederationId;
-use fedimint_core::Amount;
 use fedimint_core::invite_code::InviteCode;
+use fedimint_core::Amount;
 use fedimint_ln_common::lightning_invoice::Bolt11Invoice;
 use iced::widget::qr_code::Data;
 use routes::Route;
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
-use bitcoin::address::NetworkUnchecked;
 
 use bridge::{CoreUIMsg, CoreUIMsgPacket, ReceiveSuccessMsg, SendSuccessMsg};
 use iced::subscription::Subscription;
@@ -182,11 +182,15 @@ impl HarborWallet {
     async fn async_send_lightning(
         ui_handle: Option<Arc<bridge::UIHandle>>,
         id: Uuid,
-        federation_id: FederationId,
+        federation_id1: FederationId,
+        federation_id2: FederationId,
         invoice: Bolt11Invoice,
     ) {
         if let Some(ui_handle) = ui_handle {
-            ui_handle.send_lightning(id, federation_id, invoice).await;
+            ui_handle
+                .send_lightning(id, federation_id1, invoice.clone())
+                .await;
+            ui_handle.send_lightning(id, federation_id2, invoice).await;
         } else {
             panic!("UI handle is None");
         }
@@ -363,14 +367,8 @@ impl HarborWallet {
                 SendStatus::Sending => Command::none(),
                 _ => {
                     self.send_failure_reason = None;
-                    let federation_id = match self.active_federation.as_ref() {
-                        Some(f) => f.id,
-                        None => {
-                            // todo show error
-                            error!("No active federation");
-                            return Command::none();
-                        }
-                    };
+                    let federation_id = self.federation_list.first().unwrap().id;
+                    let federation_id2 = self.federation_list.last().unwrap().id;
 
                     let id = Uuid::new_v4();
                     self.current_send_id = Some(id);
@@ -380,6 +378,7 @@ impl HarborWallet {
                                 self.ui_handle.clone(),
                                 id,
                                 federation_id,
+                                federation_id2,
                                 invoice,
                             ),
                             |_| Message::Noop,
@@ -640,7 +639,7 @@ impl HarborWallet {
                 CoreUIMsg::FederationListUpdated(list) => {
                     // if we don't have an active federation, set it to the first one
                     if self.active_federation.is_none() {
-                        self.active_federation = list.first().cloned();
+                        self.active_federation = list.last().cloned();
                     }
 
                     self.federation_list = list;
