@@ -6,6 +6,7 @@ use async_trait::async_trait;
 use bip39::Mnemonic;
 use bitcoin::hashes::hex::FromHex;
 use bitcoin::Network;
+use fedimint_api_client::api::net::Connector;
 use fedimint_bip39::Bip39RootSecretStrategy;
 use fedimint_client::oplog::UpdateStreamOrOutcome;
 use fedimint_client::secret::{get_default_client_secret, RootSecretStrategy};
@@ -85,6 +86,8 @@ impl FedimintClient {
 
         client_builder.with_primary_module(1);
 
+        client_builder.with_tor_connector();
+
         trace!("Building fedimint client db");
         let secret = Bip39RootSecretStrategy::<12>::to_root_secret(mnemonic);
 
@@ -100,7 +103,8 @@ impl FedimintClient {
             )
         } else if let FederationInviteOrId::Invite(i) = invite_or_id {
             let download = Instant::now();
-            let config = fedimint_api_client::download_from_invite_code(&i)
+            let config = Connector::tor()
+                .download_from_invite_code(&i)
                 .await
                 .map_err(|e| {
                     error!("Could not download federation info: {e}");
@@ -662,6 +666,10 @@ impl IRawDatabase for FedimintStorage {
             federation_id: self.federation_id.clone(),
             mem: self.fedimint_memory.begin_transaction().await,
         }
+    }
+
+    fn checkpoint(&self, backup_path: &std::path::Path) -> anyhow::Result<()> {
+        Ok(())
     }
 }
 

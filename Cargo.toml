@@ -27,17 +27,18 @@ uuid = { version = "1.8", features = ["v4"] }
 async-trait = "0.1.77"
 bincode = "1.3.3"
 hex = "0.4.3"
+url = "2.5.2"
 
 bitcoin = { version = "0.30.2", features = ["base64"] }
 bip39 = "2.0.0"
-fedimint-api-client = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-hostnames" }
-fedimint-client = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-hostnames" }
-fedimint-core = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-hostnames" }
-fedimint-wallet-client = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-hostnames" }
-fedimint-mint-client = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-hostnames" }
-fedimint-ln-client = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-hostnames" }
-fedimint-bip39 = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-hostnames" }
-fedimint-ln-common = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-hostnames" }
+fedimint-api-client = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-onion-addresses" }
+fedimint-client = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-onion-addresses" }
+fedimint-core = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-onion-addresses" }
+fedimint-wallet-client = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-onion-addresses" }
+fedimint-mint-client = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-onion-addresses" }
+fedimint-ln-client = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-onion-addresses" }
+fedimint-bip39 = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-onion-addresses" }
+fedimint-ln-common = { git = "https://github.com/oleonardolima/fedimint/", branch = "feat/add-mvp-tor-support-connection-to-onion-addresses" }
 
 [dev-dependencies]
 tempdir = "0.3.7"
