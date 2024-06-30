@@ -1,8 +1,10 @@
 use anyhow::anyhow;
 use bip39::Mnemonic;
+use bitcoin::address::NetworkUnchecked;
 use bitcoin::{Address, Network};
-use fedimint_core::api::InviteCode;
+use fedimint_api_client::api::net::Connector;
 use fedimint_core::config::{ClientConfig, FederationId};
+use fedimint_core::invite_code::InviteCode;
 use fedimint_core::Amount;
 use fedimint_ln_client::{LightningClientModule, PayType};
 use fedimint_ln_common::config::FeeToAmount;
@@ -206,7 +208,7 @@ impl HarborCore {
     async fn send_onchain(
         &self,
         msg_id: Uuid,
-        address: Address,
+        address: Address<NetworkUnchecked>,
         sats: Option<u64>,
     ) -> anyhow::Result<()> {
         // todo go through all clients and select the first one that has enough balance
@@ -301,7 +303,8 @@ impl HarborCore {
 
     async fn get_federation_info(&self, invite_code: InviteCode) -> anyhow::Result<ClientConfig> {
         let download = Instant::now();
-        let config = ClientConfig::download_from_invite_code(&invite_code)
+        let config = Connector::tor()
+            .download_from_invite_code(&invite_code)
             .await
             .map_err(|e| {
                 error!("Could not download federation info: {e}");

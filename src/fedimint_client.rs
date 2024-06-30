@@ -6,19 +6,21 @@ use async_trait::async_trait;
 use bip39::Mnemonic;
 use bitcoin::hashes::hex::FromHex;
 use bitcoin::Network;
+use fedimint_api_client::api::net::Connector;
 use fedimint_bip39::Bip39RootSecretStrategy;
 use fedimint_client::oplog::UpdateStreamOrOutcome;
 use fedimint_client::secret::{get_default_client_secret, RootSecretStrategy};
 use fedimint_client::ClientHandleArc;
-use fedimint_core::config::{ClientConfig, FederationId};
+use fedimint_core::config::FederationId;
 use fedimint_core::core::OperationId;
 use fedimint_core::db::mem_impl::MemDatabase;
 use fedimint_core::db::mem_impl::MemTransaction;
 use fedimint_core::db::IDatabaseTransactionOps;
+use fedimint_core::db::IDatabaseTransactionOpsCore;
 use fedimint_core::db::IRawDatabase;
 use fedimint_core::db::IRawDatabaseTransaction;
 use fedimint_core::db::PrefixStream;
-use fedimint_core::{api::InviteCode, db::IDatabaseTransactionOpsCore};
+use fedimint_core::invite_code::InviteCode;
 use fedimint_ln_client::{
     InternalPayState, LightningClientInit, LightningClientModule, LnPayState, LnReceiveState,
 };
@@ -80,9 +82,11 @@ impl FedimintClient {
         let mut client_builder = fedimint_client::Client::builder(db.into());
         client_builder.with_module(WalletClientInit(None));
         client_builder.with_module(MintClientInit);
-        client_builder.with_module(LightningClientInit);
+        client_builder.with_module(LightningClientInit::default());
 
         client_builder.with_primary_module(1);
+
+        client_builder.with_tor_connector();
 
         trace!("Building fedimint client db");
         let secret = Bip39RootSecretStrategy::<12>::to_root_secret(mnemonic);
@@ -99,7 +103,8 @@ impl FedimintClient {
             )
         } else if let FederationInviteOrId::Invite(i) = invite_or_id {
             let download = Instant::now();
-            let config = ClientConfig::download_from_invite_code(&i)
+            let config = Connector::tor()
+                .download_from_invite_code(&i)
                 .await
                 .map_err(|e| {
                     error!("Could not download federation info: {e}");
@@ -112,7 +117,11 @@ impl FedimintClient {
 
             Some(
                 client_builder
-                    .join(get_default_client_secret(&secret, &federation_id), config)
+                    .join(
+                        get_default_client_secret(&secret, &federation_id),
+                        config,
+                        None,
+                    )
                     .await
                     .map_err(|e| {
                         error!("Could not join federation: {e}");
@@ -658,12 +667,25 @@ impl IRawDatabase for FedimintStorage {
             mem: self.fedimint_memory.begin_transaction().await,
         }
     }
+
+    fn checkpoint(&self, backup_path: &std::path::Path) -> anyhow::Result<()> {
+        Ok(())
+    }
 }
 
 pub struct SQLPseudoTransaction<'a> {
     pub(crate) storage: Arc<dyn DBConnection + Send + Sync>,
     federation_id: String,
     mem: MemTransaction<'a>,
+}
+
+impl fmt::Debug for SQLPseudoTransaction<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SQLPseudoTransaction")
+            .field("federation_id", &self.federation_id)
+            .field("mem", &self.mem)
+            .finish()
+    }
 }
 
 #[async_trait]
